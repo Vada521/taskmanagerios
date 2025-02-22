@@ -3,6 +3,35 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import prisma from '../../../../lib/prisma';
+import { isToday, subDays, parseISO } from 'date-fns';
+
+// Функция для расчета текущей серии
+function calculateStreak(completedDates: string[]): number {
+  if (completedDates.length === 0) return 0;
+  
+  // Сортируем даты
+  const sortedDates = [...completedDates].sort((a, b) => 
+    new Date(b).getTime() - new Date(a).getTime()
+  );
+  
+  // Проверяем, есть ли отметка за сегодня
+  const lastDate = parseISO(sortedDates[0]);
+  if (!isToday(lastDate)) return 0;
+  
+  let streak = 1;
+  let currentDate = subDays(new Date(), 1);
+  
+  // Проходим по предыдущим дням
+  for (let i = 1; i < sortedDates.length; i++) {
+    const dateStr = currentDate.toISOString().split('T')[0];
+    if (!completedDates.includes(dateStr)) break;
+    
+    streak++;
+    currentDate = subDays(currentDate, 1);
+  }
+  
+  return streak;
+}
 
 // PUT /api/habits/[id] - обновить привычку
 export async function PUT(
@@ -31,10 +60,14 @@ export async function PUT(
       return NextResponse.json({ error: 'Привычка не найдена' }, { status: 404 });
     }
 
+    // Рассчитываем текущую серию
+    const streak = calculateStreak(data.completedDates || []);
+
     const updatedHabit = await prisma.habit.update({
       where: { id },
       data: {
         ...data,
+        streak,
         updatedAt: new Date(),
       },
     });

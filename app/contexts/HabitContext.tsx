@@ -55,7 +55,7 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
       });
       if (!response.ok) throw new Error('Ошибка при создании привычки');
       const newHabit = await response.json();
-      setHabits([...habits, newHabit]);
+      setHabits(prevHabits => [...prevHabits, newHabit]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка');
       throw err;
@@ -68,7 +68,7 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Ошибка при удалении привычки');
-      setHabits(habits.filter(habit => habit.id !== id));
+      setHabits(prevHabits => prevHabits.filter(habit => habit.id !== id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка');
       throw err;
@@ -89,18 +89,22 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
         completedDates.add(dateStr);
       }
 
+      const updatedDates = Array.from(completedDates).sort();
+
       const response = await fetch(`/api/habits/${habitId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          completedDates: Array.from(completedDates),
+          completedDates: updatedDates,
         }),
       });
 
       if (!response.ok) throw new Error('Ошибка при обновлении привычки');
       const updatedHabit = await response.json();
 
-      setHabits(habits.map(h => h.id === habitId ? updatedHabit : h));
+      setHabits(prevHabits => 
+        prevHabits.map(h => h.id === habitId ? updatedHabit : h)
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка');
       throw err;
@@ -119,23 +123,24 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
     const habitStats = habits.map(habit => ({
       name: habit.name,
       completionRate: habit.completedDates.length,
+      streak: habit.streak,
     }));
 
     const bestHabit = habitStats.reduce((prev, current) =>
-      prev.completionRate > current.completionRate ? prev : current
+      (current.streak > prev.streak) ? current : prev
     );
 
     const worstHabit = habitStats.reduce((prev, current) =>
-      prev.completionRate < current.completionRate ? prev : current
+      (current.streak < prev.streak) ? current : prev
     );
 
     const totalCompletions = habitStats.reduce((sum, stat) => sum + stat.completionRate, 0);
-    const averageCompletion = totalCompletions / habits.length;
+    const averageCompletion = Math.round((totalCompletions / habits.length) * 100) / 100;
 
     return {
       bestHabit: bestHabit.name,
       worstHabit: worstHabit.name,
-      averageCompletion: Math.round(averageCompletion * 100) / 100,
+      averageCompletion,
     };
   };
 
