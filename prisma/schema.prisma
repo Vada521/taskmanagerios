@@ -76,13 +76,14 @@ model Todo {
 }
 
 model Habit {
-  id             String   @id @default(cuid())
-  name           String
-  streak         Int      @default(0)
+  id            String   @id @default(cuid())
+  name          String
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
   completedDates String[]
-  createdAt      DateTime @default(now())
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  streak        Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([userId])
 }

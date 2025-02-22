@@ -19,6 +19,7 @@ export interface Task {
   date?: Date;
   expanded: boolean;
   isEditing: boolean;
+  isOverdue: boolean;
   createdAt: Date;
   updatedAt: Date;
   userId: string;
@@ -152,7 +153,12 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         if (!response.ok) throw new Error('Ошибка при загрузке задач');
         
         const data = await response.json();
-        setTasks(data.map((task: Task) => ({ ...task, isEditing: false, expanded: false })));
+        setTasks(data.map((task: Task) => ({
+          ...task,
+          isEditing: false,
+          expanded: false,
+          isOverdue: task.isOverdue
+        })));
         setLastRefresh(now);
       } catch (err) {
         console.error('Ошибка при обновлении задач:', err);
@@ -327,6 +333,56 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       console.error('Ошибка при загрузке архивных задач:', err);
     }
   }, [session?.user?.id]);
+
+  // Функция для получения списка задач
+  const fetchTasks = useCallback(async () => {
+    try {
+      const response = await fetch('/api/tasks');
+      if (!response.ok) {
+        throw new Error('Ошибка при получении задач');
+      }
+      const data = await response.json();
+      setTasks(data);
+    } catch (error) {
+      console.error('Ошибка при получении задач:', error);
+    }
+  }, []);
+
+  // Функция для архивации выполненных задач за вчера
+  const archiveCompletedTasks = useCallback(async () => {
+    try {
+      const response = await fetch('/api/tasks/archive-completed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка при архивации задач');
+      }
+
+      const { archivedCount } = await response.json();
+      if (archivedCount > 0) {
+        // Обновляем список задач после архивации
+        fetchTasks();
+      }
+    } catch (error) {
+      console.error('Ошибка при архивации выполненных задач:', error);
+    }
+  }, [fetchTasks]);
+
+  // Вызываем архивацию при загрузке приложения
+  useEffect(() => {
+    if (session?.user?.id) {
+      archiveCompletedTasks();
+    }
+  }, [session?.user?.id, archiveCompletedTasks]);
+
+  // Загружаем задачи при инициализации
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchTasks();
+    }
+  }, [session?.user?.id, fetchTasks]);
 
   const value = useMemo(() => ({
     tasks,

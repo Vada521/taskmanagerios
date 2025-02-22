@@ -6,12 +6,12 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   HomeIcon,
-  ListBulletIcon,
+  CheckCircleIcon,
+  TrophyIcon,
+  ClockIcon,
   CalendarIcon,
-  FlagIcon,
   FolderIcon,
   ArrowRightOnRectangleIcon,
-  TrophyIcon,
   ArchiveBoxIcon,
 } from '@heroicons/react/24/outline';
 import UserInfo from './UserInfo';
@@ -29,11 +29,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navigation = useMemo(() => [
     { name: 'Дашборд', href: '/dashboard', icon: HomeIcon },
-    { name: 'Задачи', href: '/tasks', icon: ListBulletIcon },
+    { name: 'Задачи', href: '/tasks', icon: CheckCircleIcon },
+    { name: 'Миссии', href: '/missions', icon: TrophyIcon },
+    { name: 'Привычки', href: '/habits', icon: ClockIcon },
     { name: 'Календарь', href: '/calendar', icon: CalendarIcon },
-    { name: 'Миссии', href: '/missions', icon: FlagIcon },
     { name: 'Проекты', href: '/projects', icon: FolderIcon },
-    { name: 'Достижения', href: '/achievements', icon: TrophyIcon },
   ], []);
 
   console.log('[DashboardLayout] Статус сессии:', status);
@@ -71,27 +71,42 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             GamePlanner
           </Link>
         </div>
-        <nav className="flex-1 p-4">
-          <div className="space-y-2">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                    isActive
-                      ? 'bg-purple-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                  }`}
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span>{item.name}</span>
-                </Link>
-              );
-            })}
+        <nav className="flex-1 p-4 flex flex-col justify-between">
+          <div>
+            <div className="space-y-2">
+              {navigation.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      isActive
+                        ? 'bg-purple-600 text-white'
+                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    }`}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </nav>
+        <div className="p-4">
+          <Link
+            href="/archive"
+            className={`flex items-center justify-center p-2 rounded-lg transition-all duration-300 ${
+              pathname === '/archive'
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+            }`}
+            title="Архив"
+          >
+            <ArchiveBoxIcon className="w-5 h-5" />
+          </Link>
+        </div>
       </div>
 
       {/* Основной контент */}

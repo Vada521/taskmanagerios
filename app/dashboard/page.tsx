@@ -26,7 +26,7 @@ interface TaskItemProps {
 export default function Dashboard() {
   const { data: session, update: updateSession } = useSession();
   const router = useRouter();
-  const { tasks, toggleTaskCompletion, refreshTasks } = useTaskContext();
+  const { tasks, toggleTaskCompletion, refreshTasks, projects } = useTaskContext();
   const { missions } = useMissionContext();
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
 
@@ -144,7 +144,7 @@ export default function Dashboard() {
   const TaskItem = memo(({ task }: TaskItemProps) => (
     <div
       className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${
-        task.completed ? 'bg-green-500/20' : 'bg-white/5'
+        task.completed ? 'bg-green-500/20' : task.isOverdue ? 'bg-red-500/20' : 'bg-white/5'
       }`}
     >
       <button
@@ -157,13 +157,27 @@ export default function Dashboard() {
       >
         {task.completed && <CheckCircleIcon className="w-4 h-4 text-white" />}
       </button>
-      <span
-        className={`flex-1 text-sm transition-all duration-300 ${
-          task.completed ? 'text-gray-400 line-through' : 'text-white'
-        }`}
-      >
-        {task.title}
-      </span>
+      <div className="flex-1">
+        <span
+          className={`text-sm transition-all duration-300 ${
+            task.completed ? 'text-gray-400 line-through' : task.isOverdue ? 'text-red-400' : 'text-white'
+          }`}
+        >
+          {task.title}
+          {task.isOverdue && !task.completed && (
+            <span className="ml-2 text-xs text-red-400">(Просрочена)</span>
+          )}
+        </span>
+        {task.project && (
+          <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
+            <div 
+              className="w-2 h-2 rounded-full" 
+              style={{ backgroundColor: projects.find(p => p.id === task.project)?.color || '#4F46E5' }}
+            />
+            {projects.find(p => p.id === task.project)?.name || 'Проект удален'}
+          </div>
+        )}
+      </div>
       <div
         className={`w-2 h-2 rounded-full ${
           task.priority === 'high'
@@ -257,6 +271,9 @@ export default function Dashboard() {
                         <h3 className="text-lg font-medium text-white">{mission.title}</h3>
                         <span className="text-sm text-gray-400">
                           {mission.progress} / {mission.target} {mission.unit}
+                          {mission.progress >= mission.target && (
+                            <span className="ml-2 text-green-500">Выполнена!</span>
+                          )}
                         </span>
                       </div>
                       

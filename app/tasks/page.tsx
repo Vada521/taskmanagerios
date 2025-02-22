@@ -28,6 +28,7 @@ interface Task {
   expanded: boolean;
   isEditing: boolean;
   repeat?: 'daily' | 'weekly' | 'monthly';
+  isOverdue: boolean;
 }
 
 type DateFilter = 'all' | 'today' | 'upcoming' | 'past' | 'archived';
@@ -129,6 +130,7 @@ export default function Tasks() {
         archived: false,
         expanded: false,
         isEditing: false,
+        isOverdue: false,
       });
       setNewTask({
         title: '',
@@ -211,19 +213,6 @@ export default function Tasks() {
                   }`}
                 >
                   Все
-                </button>
-                <button
-                  onClick={() => {
-                    setDateFilter('archived');
-                    getArchivedTasks();
-                  }}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                    dateFilter === 'archived'
-                      ? 'bg-purple-600 text-white'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  Архив
                 </button>
               </div>
             </div>
@@ -399,10 +388,13 @@ export default function Tasks() {
                           >
                             <span
                               className={`block text-lg ${
-                                task.completed ? 'text-gray-400 line-through' : 'text-white'
+                                task.completed ? 'text-gray-400 line-through' : task.isOverdue ? 'text-red-400' : 'text-white'
                               }`}
                             >
                               {task.title}
+                              {task.isOverdue && !task.completed && (
+                                <span className="ml-2 text-xs text-red-400">(Просрочена)</span>
+                              )}
                             </span>
                             {task.date && (
                               <span className="block text-sm text-gray-400 mt-1">

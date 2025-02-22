@@ -1,16 +1,17 @@
+import type { Metadata } from 'next';
 import './globals.css';
 import { Inter } from 'next/font/google';
-import { Providers } from './providers';
+import Providers from './components/Providers';
 import { Toaster } from 'react-hot-toast';
 import { Suspense } from 'react';
 import { ErrorBoundary } from './components/shared/ErrorBoundary';
 import { PageLoadingFallback } from './components/shared/LoadingFallback';
 
-const inter = Inter({ subsets: ['latin', 'cyrillic'] });
+const inter = Inter({ subsets: ['latin'] });
 
-export const metadata = {
-  title: 'GamePlanner - Превратите задачи в игру',
-  description: 'Игровой планировщик задач с элементами геймификации',
+export const metadata: Metadata = {
+  title: 'GamePlanner',
+  description: 'Игровой планировщик задач',
 };
 
 export default function RootLayout({
