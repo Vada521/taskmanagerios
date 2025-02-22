@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  xp            Int       @default(0)
+  level         Int       @default(1)
+  gold          Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  todos         Todo[]
+  habits        Habit[]
+  missions      Mission[]
+  achievements  Achievement[]
+  dailyBonusLogs DailyBonusLog[]
+}
+
+model Todo {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  priority    String    @default("medium")
+  project     String?
+  repeat      String    @default("never")
+  completed   Boolean   @default(false)
+  archived    Boolean   @default(false)
+  archivedAt  DateTime?
+  date        DateTime?
+  expanded    Boolean   @default(false)
+  isEditing   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Habit {
+  id             String   @id @default(cuid())
+  name           String
+  streak         Int      @default(0)
+  completedDates String[]
+  createdAt      DateTime @default(now())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Mission {
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  folder         String
+  status         String   @default("backlog")
+  progress       Int      @default(0)
+  target         Int
+  unit           String
+  color          String
+  startDate      DateTime?
+  endDate        DateTime?
+  isOnDashboard  Boolean  @default(false)
+  progressHistory Json[]  @default([])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Achievement {
+  id          String    @id @default(cuid())
+  name        String
+  description String
+  category    String
+  condition   String
+  xpReward    Int
+  progress    Int       @default(0)
+  target      Int
+  level       String    @default("bronze")
+  achieved    Boolean   @default(false)
+  achievedAt  DateTime?
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model DailyBonusLog {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime
+  xpAmount  Int
+  goldAmount Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([date])
+}

@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 17, 24, 39;
+  --background-end-rgb: 17, 24, 39;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--background-start-rgb)),
+    rgb(var(--background-end-rgb))
+  );
+}
+
+@layer components {
+  .game-card {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl shadow-xl transition-all hover:scale-102;
+  }
+  
+  .game-button {
+    @apply px-4 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-white/50;
+  }
+  
+  .game-input {
+    @apply px-4 py-2 rounded-lg bg-white/10 text-white placeholder-white/50 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/50;
+  }
+} 
