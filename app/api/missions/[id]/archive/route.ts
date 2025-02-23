@@ -3,12 +3,11 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../auth/[...nextauth]/route';
 import { PrismaClient } from '@prisma/client';
 import { calculateMissionRewards } from '../../../../utils/rewardCalculation';
-import { NextRequest } from 'next/server';
 
 const prisma = new PrismaClient();
 
-export async function PUT(
-  request: NextRequest,
+export async function POST(
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
