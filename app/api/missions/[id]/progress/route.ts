@@ -7,7 +7,7 @@ import { calculateMissionRewards } from '@/app/utils/rewardCalculation';
 import { calculateLevelFromXP } from '@/app/utils/levelCalculation';
 
 // POST /api/missions/[id]/progress - обновить прогресс миссии
-export async function POST(
+export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
@@ -17,6 +17,7 @@ export async function POST(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
     }
 
+    const missionId = params.id;
     const data = await request.json();
     const { progress } = data;
 
@@ -30,7 +31,7 @@ export async function POST(
     // Получаем текущую миссию
     const mission = await prisma.mission.findFirst({
       where: {
-        id: params.id,
+        id: missionId,
         userId: session.user.id,
       },
     });
@@ -45,7 +46,7 @@ export async function POST(
 
     // Обновляем прогресс миссии
     const updatedMission = await prisma.mission.update({
-      where: { id: params.id },
+      where: { id: missionId },
       data: {
         progress,
         status: progress >= mission.target ? 'completed' : progress > 0 ? 'in_progress' : 'backlog',
